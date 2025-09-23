@@ -72,23 +72,20 @@ func (executor *BaseJobExecutor) JobExecute(jobContext dto.JobContext) {
 	defer timer.Stop()
 	defer func() {
 
-		if executors, found := executor.execCache.executors[jobContext.TaskBatchId]; found {
-			i := 0
-			for _, handler := range executors {
+		if executors, found := executor.execCache.get(jobContext.TaskBatchId); found {
+			for i, handler := range executors {
 				if executor.strategy == handler {
 					// 删除执行器
 					executor.LocalLogger.Infof("delete executor cache jobTask:[%d]", jobContext.TaskId)
-					//executors[i] = nil
+					executors[i] = nil
 					break
 				}
-
-				i++
 			}
 
 			// 若value没有值了  删除缓存
 			// 遍历并删除满足条件的 key
 			executor.execCache.deleteByNil()
-			executor.LocalLogger.Infof("delete executor cache executors:[%+v]", executor.execCache.executors)
+			executor.LocalLogger.Infof("delete executor cache executors:[%+v]", executors)
 
 		}
 

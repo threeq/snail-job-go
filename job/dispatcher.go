@@ -128,7 +128,7 @@ func (e *Dispatcher) GetExecutor(name string) (IJobExecutor, error) {
 
 func (e *Dispatcher) Stop(stopJob dto.StopJob) dto.Result {
 
-	if executors, found := e.execCache.executors[stopJob.TaskBatchId]; found {
+	if executors, found := e.execCache.get(stopJob.TaskBatchId); found {
 		for _, handler := range executors {
 			if handler != nil {
 				handler.setContext(context.WithValue(handler.getContext(), constant.INTERRUPT_KEY, true))
