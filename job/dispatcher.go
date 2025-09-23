@@ -14,11 +14,11 @@ type Dispatcher struct {
 	client    SnailJobClient
 	executors map[string]NewJobExecutor
 	factory   LoggerFactory
-	execCache executorCache
+	execCache *executorCache
 }
 
 func Init(client SnailJobClient, executors map[string]NewJobExecutor, factory LoggerFactory) *Dispatcher {
-	return &Dispatcher{client, executors, factory, *NewExecutorCache()}
+	return &Dispatcher{client, executors, factory, NewExecutorCache()}
 }
 
 func (e *Dispatcher) DispatchJob(dispatchJob dto.DispatchJobRequest) dto.Result {
@@ -137,6 +137,6 @@ func (e *Dispatcher) Stop(stopJob dto.StopJob) dto.Result {
 	}
 
 	// 删除缓存
-	delete(e.execCache.executors, stopJob.TaskBatchId)
+	e.execCache.delete(stopJob.TaskBatchId)
 	return dto.Result{Status: 1, Data: true}
 }

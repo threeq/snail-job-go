@@ -24,7 +24,7 @@ type JobStrategy interface {
 	setContext(ctx context.Context)
 	getContext() context.Context
 	setLogger(localLogger *logrus.Entry, remoteLogger *logrus.Entry)
-	setExecutorCache(execCache executorCache)
+	setExecutorCache(execCache *executorCache)
 }
 
 type BaseJobExecutor struct {
@@ -33,7 +33,7 @@ type BaseJobExecutor struct {
 	ctx          context.Context
 	LocalLogger  *logrus.Entry
 	RemoteLogger *logrus.Entry
-	execCache    executorCache
+	execCache    *executorCache
 }
 
 func (executor *BaseJobExecutor) bindJobStrategy(child JobStrategy) {
@@ -52,7 +52,7 @@ func (executor *BaseJobExecutor) getContext() context.Context {
 	return executor.ctx
 }
 
-func (executor *BaseJobExecutor) setExecutorCache(cache executorCache) {
+func (executor *BaseJobExecutor) setExecutorCache(cache *executorCache) {
 	executor.execCache = cache
 }
 
@@ -87,11 +87,7 @@ func (executor *BaseJobExecutor) JobExecute(jobContext dto.JobContext) {
 
 			// 若value没有值了  删除缓存
 			// 遍历并删除满足条件的 key
-			for _, value := range executor.execCache.executors {
-				if allNil(value) {
-					delete(executor.execCache.executors, jobContext.TaskBatchId)
-				}
-			}
+			executor.execCache.deleteByNil()
 			executor.LocalLogger.Infof("delete executor cache executors:[%+v]", executor.execCache.executors)
 
 		}
@@ -240,14 +236,4 @@ func (executor *BaseJobExecutor) buildMergeReduceJobArgs(jobContext dto.JobConte
 		args.Reduces = parseMapResult(reduces, nil)
 	}
 	return &args
-}
-
-// 判断切片是否全为 nil
-func allNil(slice []JobStrategy) bool {
-	for _, v := range slice {
-		if v != nil {
-			return false
-		}
-	}
-	return true
 }
