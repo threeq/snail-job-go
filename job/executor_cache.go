@@ -64,6 +64,21 @@ func (receiver *executorCache) deleteByNil() {
 	}
 }
 
+func (receiver *executorCache) del(id int64, strategy JobStrategy) {
+	receiver.mutex.Lock()
+	defer receiver.mutex.Unlock()
+	executors, ok := receiver.executors[id]
+	if !ok {
+		return
+	}
+	for i, handler := range executors {
+		if strategy == handler {
+			executors[i] = nil
+			break
+		}
+	}
+}
+
 // 判断切片是否全为 nil
 func allNil(slice []JobStrategy) bool {
 	for _, v := range slice {

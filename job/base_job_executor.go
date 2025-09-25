@@ -73,14 +73,9 @@ func (executor *BaseJobExecutor) JobExecute(jobContext dto.JobContext) {
 	defer func() {
 
 		if executors, found := executor.execCache.get(jobContext.TaskBatchId); found {
-			for i, handler := range executors {
-				if executor.strategy == handler {
-					// 删除执行器
-					executor.LocalLogger.Infof("delete executor cache jobTask:[%d]", jobContext.TaskId)
-					executors[i] = nil
-					break
-				}
-			}
+			// 删除执行器
+			executor.LocalLogger.Infof("delete executor cache jobTask:[%d]", jobContext.TaskId)
+			executor.execCache.del(jobContext.TaskBatchId, executor.strategy)
 
 			// 若value没有值了  删除缓存
 			// 遍历并删除满足条件的 key
